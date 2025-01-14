@@ -1,0 +1,292 @@
+SELECT * FROM `country`;
+SELECT * FROM `state`;
+SELECT * FROM `city` ;
+SELECT * FROM `lab`;
+SELECT * FROM  branch ;
+SELECT * FROM   `department`;
+SELECT * FROM `service`
+SELECT * FROM   USER;
+SELECT * FROM   doctor;
+SELECT * FROM   `menu`;
+SELECT * FROM   `permission`;
+SELECT * FROM   `hospital`;
+SELECT * FROM   `patient`;
+
+SELECT m.menu_id, m.label, m.to_url, m.icon, m.parent_menu_id
+	FROM menu m
+	INNER JOIN permission p ON m.menu_id = p.menu_id
+	WHERE p.role_id = 1 AND p.allowed = TRUE;
+
+# DROP TABLE USER
+DROP DATABASE labms;
+
+
+
+
+
+
+
+
+
+
+
+CREATE TABLE Country (
+    country_id INT PRIMARY KEY AUTO_INCREMENT,
+    country_name VARCHAR(255) NOT NULL,
+    country_code VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+# State Table
+CREATE TABLE State (
+    state_id INT PRIMARY KEY AUTO_INCREMENT,
+    state_name VARCHAR(255) NOT NULL,
+    country_id INT,
+    FOREIGN KEY (country_id) REFERENCES Country(country_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+# City Table
+CREATE TABLE City (
+    city_id INT PRIMARY KEY AUTO_INCREMENT,
+    city_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    state_id INT,
+    FOREIGN KEY (state_id) REFERENCES State(state_id)
+);
+
+
+# Lab Table
+CREATE TABLE Lab (
+    lab_id INT PRIMARY KEY AUTO_INCREMENT,
+    lab_name VARCHAR(255) NOT NULL,
+    city_id INT,
+    lab_Code VARCHAR(255) NOT NULL UNIQUE,
+    FOREIGN KEY (city_id) REFERENCES City(city_id),
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by varchar(255)
+
+    #address
+);
+
+CREATE TABLE Departments (
+    department_id INT PRIMARY KEY AUTO_INCREMENT,
+    department_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    #lab_Code VARCHAR(255) NOT NULL UNIQUE,
+    lab_id INT,
+    FOREIGN KEY (lab_id) REFERENCES Lab(lab_id),
+);
+# Branch Table
+CREATE TABLE Branch (
+    branch_id INT PRIMARY KEY AUTO_INCREMENT,
+    branch_name VARCHAR(255),
+    lab_id INT,
+    FOREIGN KEY (lab_id) REFERENCES Lab(lab_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    #address
+    #branch_code
+);
+
+# Role table
+CREATE TABLE Role (
+    role_id INT PRIMARY KEY AUTO_INCREMENT,
+    role_name VARCHAR(255), -- Admin, Doctor, Nurse, Receptionist,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+#User table
+CREATE TABLE USER (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    NAME VARCHAR(100),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    PASSWORD VARCHAR(255),
+    username VARCHAR(255),
+    role ENUM('admin', 'doctor', 'nurse', 'receptionist', 'patient') NOT NULL,
+    phone_number VARCHAR(15),
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+#Doctor table
+CREATE TABLE Doctor (
+    doctor_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    specialization VARCHAR(100),
+    years_of_experience INT,
+    license_number VARCHAR(50),
+    clinic_hours VARCHAR(100),
+    # assigned_lab_id INT,
+    FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+
+#Nurse
+CREATE TABLE Nurse (
+    nurse_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    shift VARCHAR(50),
+    assigned_doctor_id INT,
+    qualification VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_doctor_id) REFERENCES Doctor(doctor_id) ON DELETE SET NULL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+#receptionist
+CREATE TABLE Receptionist (
+    receptionist_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    desk_location VARCHAR(100),
+    shift_timing VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);
+
+#Patient
+#CREATE TABLE Patient (
+ #   patient_id INT PRIMARY KEY AUTO_INCREMENT,
+  #  user_id INT,
+   # medical_history TEXT,
+    #blood_type VARCHAR(5),
+    #insurance_details VARCHAR(255),
+    #FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE
+    #created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+#);
+
+#permission
+CREATE TABLE permission (
+    permission_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_id INT NOT NULL,         -- This would reference the roles table in your system
+    menu_id INT NOT NULL,         -- References the menu table
+    allowed BOOLEAN NOT NULL DEFAULT FALSE,  -- Whether the role has access (true or false)
+    CONSTRAINT fk_menu FOREIGN KEY (menu_id) REFERENCES menu(menu_id),
+    CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES role(role_id)  -- Assuming you have a roles table
+);
+
+
+
+#menu
+CREATE TABLE menu (
+    menu_id INT AUTO_INCREMENT PRIMARY KEY,
+    label VARCHAR(255) NOT NULL,
+    to_url VARCHAR(255) NOT NULL,  -- This is the URL/path the menu item points to
+    icon VARCHAR(255),             -- Icon for the menu item (optional)
+    parent_menu_id INT DEFAULT NULL, -- For hierarchical menus (optional, could be NULL)
+    CONSTRAINT fk_parent_menu FOREIGN KEY (parent_menu_id) REFERENCES menu(menu_id) ON DELETE SET NULL
+);
+
+#hospital
+CREATE TABLE hospital (
+    hospital_id INT AUTO_INCREMENT PRIMARY KEY,
+    hospital_name VARCHAR(255) NOT NULL,
+    city_id INT NOT NULL,
+    state_id INT NOT NULL,
+    address VARCHAR(255),
+    phone_number VARCHAR(20),
+    hospital_code VARCHAR(10) UNIQUE NOT NULL,
+    -- Foreign keys for city and state
+    CONSTRAINT fk_city FOREIGN KEY (city_id) REFERENCES city(city_id),
+    CONSTRAINT fk_state FOREIGN KEY (state_id) REFERENCES state(state_id)
+);
+
+CREATE TABLE hospital_branch (
+    branch_id INT AUTO_INCREMENT PRIMARY KEY,
+    hospital_id INT NOT NULL,
+    branch_name VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
+    phone_number VARCHAR(20),
+    branchCode VARCHAR(10) UNIQUE NOT NULL,
+    -- Foreign key for hospital
+    CONSTRAINT fk_hospital FOREIGN KEY (hospital_id) REFERENCES hospital(hospital_id)
+);
+
+CREATE TABLE hospital_lab_mapping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    branch_id INT NOT NULL,
+    lab_id INT NOT NULL,
+    hospital_id INT NOT NULL,
+    -- Foreign key for branch and lab
+    CONSTRAINT fk_hospital_branch_lab_branch FOREIGN KEY (branch_id) REFERENCES hospital_branch(branch_id),
+    CONSTRAINT fk_hospital_branch_lab_lab FOREIGN KEY (lab_id) REFERENCES lab(lab_id)
+     CONSTRAINT fk_hospital_lab_hospital FOREIGN KEY (hospital_id) REFERENCES hospital(hospital_id),
+
+);
+CREATE TABLE Hospital_doctor (
+    hd_id INT PRIMARY KEY AUTO_INCREMENT,
+    hospital_id INT,
+    doctor_id INT,
+    role VARCHAR(50), -- Role of the doctor in the hospital (e.g., Consultant, Resident)
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (hospital_id) REFERENCES hospital(hospital_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id)
+);
+
+CREATE TABLE patient (
+    patient_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    age INT NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    contact_number VARCHAR(15),
+    email VARCHAR(100),
+    address TEXT,
+    patientCode VARCHAR(10) UNIQUE NOT NULL
+);
+
+CREATE TABLE test (
+    test_id INT PRIMARY KEY AUTO_INCREMENT,
+    test_name VARCHAR(100) NOT NULL,
+    test_type VARCHAR(50) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    description TEXT,
+    shortName VARCHAR(80)
+);
+CREATE TABLE visit (
+    visit_id INT PRIMARY KEY AUTO_INCREMENT,
+    patient_id INT NOT NULL,
+    visit_date DATE NOT NULL,
+    total_amount DECIMAL(10, 2),
+    STATUS VARCHAR(50) NOT NULL,
+    payment_status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES patient(patient_id)
+);
+CREATE TABLE visits_tests ( -- test detals on every visit
+    vt_id INT PRIMARY KEY AUTO_INCREMENT,
+    visit_id INT NOT NULL,
+    test_id INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL, -- per test  and visit
+    FOREIGN KEY (visit_id) REFERENCES visit(visit_id),
+    FOREIGN KEY (test_id) REFERENCES test(test_id)
+);
+CREATE TABLE report (
+    report_id INT PRIMARY KEY AUTO_INCREMENT,
+    visit_id INT NOT NULL,
+    test_id INT NOT NULL,
+    report_file VARCHAR(255),
+    result_status VARCHAR(50),
+    generated_date DATE,
+    FOREIGN KEY (visit_id) REFERENCES visit_master(visit_id),
+    FOREIGN KEY (test_id) REFERENCES test_master(test_id)
+);
+CREATE TABLE billing (
+    bill_id INT PRIMARY KEY AUTO_INCREMENT,
+    visit_id INT NOT NULL,
+    total_amount DECIMAL(10, 2),
+    discount DECIMAL(10, 2),
+    tax DECIMAL(10, 2),
+    final_amount DECIMAL(10, 2),
+    payment_method VARCHAR(50),
+    payment_date DATE,
+    FOREIGN KEY (visit_id) REFERENCES visit_master(visit_id)
+);

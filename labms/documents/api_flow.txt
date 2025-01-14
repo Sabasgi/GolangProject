@@ -1,0 +1,26 @@
+
+...........................
+login flow
+.........................
+1 /o/login
+post
+{
+	username:"",
+	password:""
+}
+
+2 o/role/menus           //to get menu of role id
+post
+{
+	role_id:1
+	OR role_name :"admin"     // small case / capt=ital case handling remaining
+}
+
+
+
+..............................
+adminRoutes
+.............................
+creation of Country , State ,City , Lab , User, Role,Lab,Branch is done
+ --- need to implement excel data  upload i.e. bulk upload or file upload and save into db
+Bulk creation is done for - hopitals,hospital branches ,doctors,cities,states,lab branches,
