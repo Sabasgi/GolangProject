@@ -2,18 +2,18 @@
 ...........................
 login flow
 .........................
-1 /o/login
+1. /o/user/login
 post
 {
 	username:"",
 	password:""
 }
 
-2 o/role/menus           //to get menu of role id
+2. o/role/menus           //to get menu of role id
 post
 {
 	role_id:1
-	OR role_name :"admin"     // small case / capt=ital case handling remaining
+	OR role_name :"admin"     // small case / captital case handling remaining
 }
 
 

@@ -139,8 +139,85 @@ func (rs *RoleServiceStruct) DeleteOneRoleService(role models.Role) error {
 	return rs.RoleService.DeleteOne(role)
 }
 func (rs *RoleServiceStruct) GetMenusByRole(role models.Role) ([]models.Menu, error) {
-	return rs.RoleService.FetchMenusByRole(role.RoleID)
+	m, e := rs.RoleService.FetchMenusByRole(role.RoleID)
+	return createhierarchy(m), e
 
+}
+func createhierarchy(data []models.Menu) []models.Menu {
+	menuMap := make(map[int][]models.Menu)
+	var ParentNodes []models.Menu
+	for _, d := range data {
+		if d.ParentMenuID == nil {
+			// var Node models.Menu
+			// Node.Icon = d.Icon
+			// Node.Label = d.Label
+			// Node.MenuID = d.MenuID
+			// Node.Allowed = d.Allowed
+			ParentNodes = append(ParentNodes, d)
+			// Node.ToURL = d.ToURL
+		} else {
+			// if _, ok := Menus[Perm.ParentMenuID]; ok {
+			menuMap[*d.ParentMenuID] = append(menuMap[*d.ParentMenuID], d)
+			// }
+		}
+	}
+	for i, Node := range ParentNodes {
+		ParentNodes[i].Items = append(ParentNodes[i].Items, convertTomenu(menuMap[Node.MenuID])...)
+		// ParentNodes[i].MenuID = 0
+	}
+	// for _, d := range data {
+	// 	var menuID int
+	// 	// var label, icon, toURL string
+	// 	// var parentMenuID sql.NullInt64
+	// 	// var allowed bool
+	// 	// err := rows.Scan(&menuID, &label, &icon, &toURL, &parentMenuID, &allowed)
+	// 	// if err != nil {
+	// 	// 	return nil, err
+	// 	// }
+
+	// 	menu := models.Menu{
+	// 		Label: d.Label,
+	// 		Icon:  d.Icon,
+	// 		// To:          d.,
+	// 		ParentMenuID: nil,
+	// 		Items:        []models.Menu{},
+	// 	}
+
+	// 	if d.ParentMenuID != nil {
+	// 		menu.ParentMenuID = new(int)
+	// 		*menu.ParentMenuID = int(*d.ParentMenuID)
+	// 	}
+
+	// 	if parentMenu, ok := menuMap[menuID]; ok {
+	// 		menu.Items = append(parentMenu.Items, menu)
+	// 	} else {
+	// 		menuMap[menuID] = menu
+	// 	}
+	// }
+
+	// Find top-level menus (menus without a parent)
+	// var topLevelMenus []models.Menu
+	// for _, menu := range menuMap {
+	// 	if menu.ParentMenuID == nil {
+	// 		topLevelMenus = append(topLevelMenus, menu)
+	// 	}
+	// }
+
+	return ParentNodes
+}
+func convertTomenu(all []models.Menu) []models.Menu {
+	var menuslice []models.Menu
+	for _, t := range all {
+		var m models.Menu
+		m.Icon = t.Icon
+		m.Label = t.Label
+		m.MenuID = t.MenuID
+		m.ParentMenuID = t.ParentMenuID
+		// m.ToURL = t.ToURL
+		m.Allowed = t.Allowed
+		menuslice = append(menuslice, m)
+	}
+	return menuslice
 }
 
 // ......................................................................................................................

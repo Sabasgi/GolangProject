@@ -541,14 +541,14 @@ func (rr *RoleSQLRepo) DeleteOne(r models.Role) error {
 // FetchMenusByRole fetches all menus a role has permission to access
 func (rr *RoleSQLRepo) FetchMenusByRole(roleID int) ([]models.Menu, error) {
 	query := `
-	SELECT m.menu_id, m.label, m.to_url, m.icon, m.parent_menu_id
+	SELECT m.menu_id, m.label, m.to_url, m.icon, m.parent_menu_id,p.allowed
 	FROM menu m
 	INNER JOIN permission p ON m.menu_id = p.menu_id
 	WHERE p.role_id = ? AND p.allowed = TRUE`
 	var menus []models.Menu
 	res, rerr := rr.CRepo.Session.SelectBySql(query, roleID).Load(&menus)
 	if rerr != nil {
-		log.Println("ERRPR: FetchMenusByRole")
+		log.Println("ERRPR: FetchMenusByRole", rerr)
 	}
 	if len(menus) > 0 {
 		log.Println("Count of records ", res)

@@ -107,7 +107,7 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	o.GET("/role/getone", h.GetOneRoleRoute)
 	o.POST("/role/deleteone", h.DeleteRoleRoute)
 	// //login
-	o.POST("/login", h.LoginRoute)
+	o.POST("/user/login", h.LoginRoute)
 	o.POST("/role/menus", h.GetMenusByRole)
 	//country
 	o.POST("/country/create", h.CreateCountryRoute)

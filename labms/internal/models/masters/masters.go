@@ -63,7 +63,19 @@ type Menu struct {
 	ToURL        string `json:"to_url"`
 	Icon         string `json:"icon"`
 	ParentMenuID *int   `json:"parent_menu_id"`
+	Allowed      bool   `json:"allowed"`
+	Items        []Menu `json:"items"`
 }
+
+// type MenuHierarchy struct {
+// 	MenuID       int    `json:"menu_id"`
+// 	Label        string `json:"label"`
+// 	ToURL        string `json:"to_url"`
+// 	Icon         string `json:"icon"`
+// 	ParentMenuID *int   `json:"parent_menu_id"`
+// 	Allowed      bool   `json:"allowed"`
+// 	Items        []Menu `json:"items"`
+// }
 
 // Permission struct
 type Permission struct {
