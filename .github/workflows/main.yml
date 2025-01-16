@@ -31,14 +31,15 @@ jobs:
       - name: Build the application
         run: go build -o main .
 
-      # Step 5: Build and push the Docker image
+      # Step 5: Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.shraddhasa@mkcl.org }}
-          password: ${{ secrets.Shraddha@2311 }}
+          username: ${{ secrets.DOCKERUSERNAME }}
+          password: ${{ secrets.DOCKERPASSWORD }}
 
+      # Step 6: Build and push Docker image
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.shraddhasa@mkcl.org }}/golangprojects:latest .
-          docker push ${{ secrets.shraddhasa@mkcl.org }}/golangprojects:latest
+          docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
+          docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
