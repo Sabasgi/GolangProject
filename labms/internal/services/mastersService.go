@@ -213,7 +213,7 @@ func convertTomenu(all []models.Menu) []models.Menu {
 		m.Label = t.Label
 		m.MenuID = t.MenuID
 		m.ParentMenuID = t.ParentMenuID
-		// m.ToURL = t.ToURL
+		m.ToURL = t.ToURL
 		m.Allowed = t.Allowed
 		menuslice = append(menuslice, m)
 	}

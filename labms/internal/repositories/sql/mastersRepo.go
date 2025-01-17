@@ -579,8 +579,20 @@ func NewLabRepo(sr *db.SQLRepo) *LabSQLRepo {
 
 // Create a new lab
 func (lr *LabSQLRepo) Create(l models.Lab) error {
-	query := "INSERT INTO Lab (lab_name, lab_code) VALUES (?, ?)"
-	res, rerr := lr.CRepo.Session.Exec(query, l.LabName, l.LabCode)
+	ct := time.Now()
+	layout := "2006-01-02 15:04:05"
+	l.CreatedOn = ct.Format(layout)
+	l.CreatedBy = ""
+	codeLength, _ := strconv.Atoi(os.Getenv("codelength")) // Fetch code length from environment variable
+	code, err := generateRandomString(codeLength)          // Generate random string
+	if err != nil {
+		fmt.Println("ERROR: HospitalSQLRepo Create - Code generation error", err)
+		return errors.New("ERROR_CODE_GENERATION_ERR")
+	}
+	l.LabCode = code // Set generated hospital code
+
+	query := "INSERT INTO Lab (lab_name, lab_code,created_on,created_by) VALUES (?, ?,?,?)"
+	res, rerr := lr.CRepo.Session.Exec(query, l.LabName, l.LabCode, l.CreatedOn, l.CreatedBy)
 	if rerr != nil {
 		fmt.Println("ERROR : LabSQLRepo Create ", rerr)
 		return rerr
@@ -637,7 +649,7 @@ func (lr *LabSQLRepo) Modify(l models.Lab) error {
 // Get all labs
 func (lr *LabSQLRepo) GetAll() ([]models.Lab, error) {
 	var labs []models.Lab
-	query := "SELECT lab_id, lab_name, city_id, lab_code FROM Lab"
+	query := "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab"
 	rowsCount, rerr := lr.CRepo.Session.SelectBySql(query).Load(&labs)
 	if rerr != nil {
 		fmt.Println("ERROR : LabSQLRepo GetAll ", rerr)
