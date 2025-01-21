@@ -83,11 +83,13 @@ CREATE TABLE USER (
     email VARCHAR(100) UNIQUE NOT NULL,
     PASSWORD VARCHAR(255),
     username VARCHAR(255) UNIQUE,
-    role ENUM('admin', 'doctor', 'nurse', 'receptionist', 'patient', 'user') NOT NULL,
+    role VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(15),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    lab_id INT NOT NULL, 
-    FOREIGN KEY (lab_id) REFERENCES Lab(lab_id)  -- removed comma and fixed reference syntax
+    lab_id INT NOT NULL,
+    FOREIGN KEY (lab_id) REFERENCES Lab(lab_id) ,
+    created_by VARCHAR(255) NULL,
+    updated_by VARCHAR(255) NULL
 );
 
 CREATE TABLE Patient (
@@ -107,7 +109,7 @@ CREATE TABLE Patient (
     state_id INT,
     country_id INT,
     city_id INT,
-    lab_id INT NOT NULL, 
+    lab_id INT NOT NULL,
     FOREIGN KEY (lab_id) REFERENCES lab(lab_id);
     FOREIGN KEY (state_id) REFERENCES State(state_id),
     FOREIGN KEY (country_id) REFERENCES Country(country_id),
@@ -115,6 +117,42 @@ CREATE TABLE Patient (
 );
 
 # get departmens of  a branch
-SELECT d.`department_name`,d.`department_id`,b.`branch_id` FROM department d 
-	INNER JOIN department b ON d.branch_id = b.branch_id 
+SELECT d.`department_name`,d.`department_id`,b.`branch_id` FROM department d
+	INNER JOIN department b ON d.branch_id = b.branch_id
 	WHERE d.branch_id = 1 ;
+
+
+	# Role table
+CREATE TABLE Role (
+    role_id INT PRIMARY KEY AUTO_INCREMENT,
+    role_name VARCHAR(255), -- Admin, Doctor, Nurse, Receptionist,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255) NULL,
+    updated_by VARCHAR(255) NULL
+
+
+);
+
+
+
+CREATE TABLE permission (
+    permission_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_id INT NOT NULL,         -- This would reference the roles table in your system
+    menu_id INT NOT NULL,         -- References the menu table
+    allowed BOOLEAN NOT NULL DEFAULT FALSE,  -- Whether the role has access (true or false)
+    CONSTRAINT fk_menu FOREIGN KEY (menu_id) REFERENCES menu(menu_id),
+    CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES role(role_id)  -- Assuming you have a roles table
+);
+
+#menu
+CREATE TABLE menu (
+    menu_id INT AUTO_INCREMENT PRIMARY KEY,
+    label VARCHAR(255) NOT NULL,
+    to_url VARCHAR(255) NOT NULL,  -- This is the URL/path the menu item points to
+    icon VARCHAR(255),             -- Icon for the menu item (optional)
+    parent_menu_id INT DEFAULT NULL, -- For hierarchical menus (optional, could be NULL)
+    CONSTRAINT fk_parent_menu FOREIGN KEY (parent_menu_id) REFERENCES menu(menu_id) ON DELETE SET NULL,
+    created_by VARCHAR(255)
+
+);

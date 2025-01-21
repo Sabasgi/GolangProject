@@ -8,6 +8,7 @@ import (
 	"repogin/internal/db"
 	models "repogin/internal/models/masters"
 	"strconv"
+	"strings"
 	"time"
 
 	"crypto/rand"
@@ -436,6 +437,7 @@ type RoleRepo interface {
 	GetOne(models.Role) (models.Role, error)
 	DeleteOne(models.Role) error
 	FetchMenusByRole(int) ([]models.Menu, error)
+	// AddMenusForRole([]models.Menu) error
 }
 type RoleSQLRepo struct {
 	CRepo *db.SQLRepo
@@ -449,6 +451,25 @@ func NewRoleRepo(sr *db.SQLRepo) *RoleSQLRepo {
 
 // Create inserts a new role into the Role table
 func (rr *RoleSQLRepo) Create(r models.Role) error {
+	query := "INSERT INTO Role (role_name, description) VALUES (?, ?)"
+	res, rerr := rr.CRepo.Session.Exec(query, r.RoleName, r.Description)
+	if rerr != nil {
+		fmt.Println("ERROR : RoleSQLRepo Create ", rerr)
+		return rerr
+	}
+	inc, _ := res.LastInsertId()
+	rac, _ := res.RowsAffected()
+	if inc > 0 || rac > 0 {
+		fmt.Println("Role inserted successfully! with sql id - ", inc)
+		return nil
+	}
+	return errors.New("ERROR_ROLE_NOT_INSERTED")
+}
+
+// Create inserts a new menus into the mennu table for role
+func (rr *RoleSQLRepo) AddMenusForRole(r models.Role) error {
+	r.RoleName = strings.ToLower(r.RoleName)
+	// `insert into menu ("menu_id", "label", "to_url", "icon", "parent_menu_id") values('1','Home','','',NULL);`
 	query := "INSERT INTO Role (role_name, description) VALUES (?, ?)"
 	res, rerr := rr.CRepo.Session.Exec(query, r.RoleName, r.Description)
 	if rerr != nil {
@@ -483,7 +504,7 @@ func (rr *RoleSQLRepo) Modify(r models.Role) error {
 // GetAll retrieves all roles from the Role table
 func (rr *RoleSQLRepo) GetAll() ([]models.Role, error) {
 	var roles []models.Role
-	query := "SELECT role_id, role_name, description FROM Role"
+	query := "SELECT role_id, role_name, description FROM Role where role_id>1"
 	rowsCount, rerr := rr.CRepo.Session.SelectBySql(query).Load(&roles)
 	if rerr != nil {
 		fmt.Println("ERROR : RoleSQLRepo GetAll ", rerr)
@@ -649,7 +670,7 @@ func (lr *LabSQLRepo) Modify(l models.Lab) error {
 // Get all labs
 func (lr *LabSQLRepo) GetAll() ([]models.Lab, error) {
 	var labs []models.Lab
-	query := "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab"
+	query := "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id>1"
 	rowsCount, rerr := lr.CRepo.Session.SelectBySql(query).Load(&labs)
 	if rerr != nil {
 		fmt.Println("ERROR : LabSQLRepo GetAll ", rerr)
@@ -834,7 +855,7 @@ func (br *BranchSQLRepo) DeleteOne(b models.Branch) error {
 type UserrRepo interface {
 	Create(models.Userr) error
 	Modify(models.Userr) error
-	GetAll() ([]models.Userr, error)
+	GetAll(r, id string) ([]models.ResponseUser, error)
 	GetOne(models.Userr) (models.Userr, error)
 	GetUser(models.Userr) (models.Userr, error)
 	DeleteOne(models.Userr) error
@@ -854,6 +875,7 @@ func (ur *UserSQLRepo) Create(u models.Userr) error {
 	ct := time.Now()
 	layout := "2006-01-02 15:04:05"
 	u.CreatedAt = ct.Format(layout)
+	u.Role = strings.ToLower(u.Role)
 	query := "INSERT INTO User (name, email,username, password, role, phone_number, created_at,lab_id) VALUES (?, ?, ?, ?, ?, ?,?,?)"
 	res, rerr := ur.CRepo.Session.Exec(query, u.Name, u.Email, u.Username, u.Password, u.Role, u.PhoneNumber, u.CreatedAt, u.LabID)
 	if rerr != nil {
@@ -886,9 +908,19 @@ func (ur *UserSQLRepo) Modify(u models.Userr) error {
 }
 
 // Get all users
-func (ur *UserSQLRepo) GetAll() ([]models.Userr, error) {
-	var users []models.Userr
-	query := "SELECT user_id, name,username, email, role, phone_number, address, created_at,lab_id FROM User"
+func (ur *UserSQLRepo) GetAll(r, id string) ([]models.ResponseUser, error) {
+	var users []models.ResponseUser
+	var query string
+	if r == "superadmin" {
+		query = `SELECT user_id, NAME,username, email, role, phone_number, created_at,l.lab_id,l.lab_name,l.lab_code
+					FROM USER u
+					INNER JOIN lab l ON l.lab_id = u.lab_id;`
+	} else {
+		query = `SELECT user_id, NAME,username, email, role, phone_number, created_at,l.lab_id,l.lab_name,l.lab_code
+					FROM USER u
+					INNER JOIN lab l ON l.lab_id = u.lab_id AND u.lab_id=?;`
+	}
+
 	rowsCount, rerr := ur.CRepo.Session.SelectBySql(query).Load(&users)
 	if rerr != nil {
 		fmt.Println("ERROR : UserSQLRepo GetAll ", rerr)

@@ -115,3 +115,17 @@ type HospitalDoctor struct {
 	StartDate        string `json:"start_date" db:"start_date"` // Assuming date is in string format, you may convert it to time.Time
 	EndDate          string `json:"end_date" db:"end_date"`     // Same as above
 }
+type ResponseUser struct {
+	UserID      int    `json:"user_id" db:"user_id"`
+	Name        string `json:"name" db:"name"`
+	Email       string `json:"email" db:"email"`
+	Password    string `json:"password" db:"password"`
+	Role        string `json:"role" db:"role"`
+	PhoneNumber string `json:"phone_number" db:"phone_number"`
+	// Address     string `json:"address" db:"address"`
+	CreatedAt string `json:"created_at" db:"created_at"`
+	Username  string `json:"username" db:"username"`
+	LabID     int    `json:"lab_id" db:"lab_id"`
+	LabName   string `json:"lab_name" db:"lab_name"`
+	LabCode   string `json:"lab_code" db:"lab_code"`
+}

@@ -59,12 +59,13 @@ type MainHandlers struct {
 func NewHandlers(s AllServices, e *gin.Engine) {
 	o := e.Group("/o")
 	c := e.Group("/c")
+	c.Use(middleware.TokenValidationMiddleware()) // Middleware to validate token
 	// r := e.Group("/r")
-	adminRoutes := e.Group("/admin")
-	adminRoutes.Use(middleware.RoleBasedMiddleware("admin"))
+	// adminRoutes := e.Group("/admin")
+	// adminRoutes.Use(middleware.RoleBasedMiddleware("admin"))
 
-	clientRoutes := e.Group("/client")
-	clientRoutes.Use(middleware.RoleBasedMiddleware("client"))
+	// clientRoutes := e.Group("/client")
+	// clientRoutes.Use(middleware.RoleBasedMiddleware("client"))
 
 	h := &MainHandlers{
 		Ps:                s.Prodservice,
@@ -95,13 +96,15 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	o.POST("/product/deleteone", h.DeleteOneRoute)
 	//users routes registered here
 	// adminRoutes.POST("/user/create", h.CreateUserRoute)
+	c.POST("/user/create", middleware.RoleAuthorization([]string{"admin"}), h.CreateUserRoute) /// usage of rolebased authorization
+	c.GET("/user/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllUsersRoute)
 	o.POST("/user/create", h.CreateUserRoute)
 	o.PUT("/user/update", h.UpdateUserRoute)
-	o.GET("/user/getall", h.GetAllUsersRoute)
+	// o.GET("/user/getall", h.GetAllUsersRoute)
 	o.GET("/user/getone", h.GetOneUserRoute)
 	o.POST("/user/deleteone", h.DeleteUserRoute)
 	//role
-	o.POST("/role/create", h.CreateRoleRoute)
+	c.POST("/role/create", middleware.RoleAuthorization([]string{"admin", "superadmin"}), h.CreateRoleRoute)
 	o.PUT("/role/update", h.UpdateRoleRoute)
 	o.GET("/role/getall", h.GetAllRolesRoute)
 	o.GET("/role/getone", h.GetOneRoleRoute)

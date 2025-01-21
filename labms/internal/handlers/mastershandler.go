@@ -451,6 +451,17 @@ func (mh *MainHandlers) GetAllRolesRoute(c *gin.Context) {
 	return
 }
 
+// func (mh *MainHandlers) GetSuperadminAllRolesRoute(c *gin.Context) {
+
+//		roles, err := mh.Roleservice.GetAllRolesService()
+//		if err != nil {
+//			fmt.Println("ERROR : GetAllRolesRoute", err)
+//			c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+//			return
+//		}
+//		c.JSON(http.StatusOK, roles)
+//		return
+//	}
 func (mh *MainHandlers) GetOneRoleRoute(c *gin.Context) {
 	var role models.Role
 	bindError := c.Bind(&role)
@@ -541,7 +552,10 @@ func (mh *MainHandlers) UpdateUserRoute(c *gin.Context) {
 }
 
 func (mh *MainHandlers) GetAllUsersRoute(c *gin.Context) {
-	users, err := mh.Uservice.GetAllUsersService()
+	userRole := c.GetString("role") // Assume role is extracted from token in earlier middleware
+	labId := c.GetString("labId")
+
+	users, err := mh.Uservice.GetAllUsersService(userRole, labId)
 	if err != nil {
 		fmt.Println("ERROR : GetAllUsersRoute", err)
 		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})

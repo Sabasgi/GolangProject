@@ -310,8 +310,8 @@ func (us *UserrServiceStruct) UpdateUserService(user models.Userr) error {
 	return us.UserService.Modify(user)
 }
 
-func (us *UserrServiceStruct) GetAllUsersService() ([]models.Userr, error) {
-	return us.UserService.GetAll()
+func (us *UserrServiceStruct) GetAllUsersService(r, id string) ([]models.ResponseUser, error) {
+	return us.UserService.GetAll(r, id)
 }
 
 func (us *UserrServiceStruct) GetOneUserService(user models.Userr) (models.Userr, error) {
