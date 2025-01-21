@@ -25,11 +25,19 @@ jobs:
 
       # Step 3: Install dependencies
       - name: Install dependencies
-        run: go mod tidy
+        run: |
+          go mod tidy
+          go mod verify  # Ensures dependencies are correctly installed
 
       # Step 4: Build the application
       - name: Build the application
-        run: go build -o main .
+        run: |
+          go build -o main .
+          # Ensure the build output is successful
+          if [ ! -f main ]; then
+            echo "Build failed, 'main' executable not found!"
+            exit 1
+          fi
 
       # Step 5: Log in to DockerHub
       - name: Log in to DockerHub
@@ -43,3 +51,8 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
           docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
+          
+      # Step 7: Confirm Docker image exists after push
+      - name: Verify Docker image exists
+        run: |
+          docker pull ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
