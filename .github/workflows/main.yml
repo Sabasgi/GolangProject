@@ -13,46 +13,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Go
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: 1.20
 
-      # Step 3: Install dependencies
+      - name: Check Go version
+        run: go version  # This will verify Go installation
+
       - name: Install dependencies
         run: |
           go mod tidy
           go mod verify  # Ensures dependencies are correctly installed
 
-      # Step 4: Build the application
       - name: Build the application
         run: |
           go build -o main .
-          # Ensure the build output is successful
           if [ ! -f main ]; then
             echo "Build failed, 'main' executable not found!"
             exit 1
           fi
 
-      # Step 5: Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERPASSWORD }}
 
-      # Step 6: Build and push Docker image
       - name: Build and push Docker image
         run: |
           docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
           docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
-          
-      # Step 7: Confirm Docker image exists after push
+
       - name: Verify Docker image exists
         run: |
           docker pull ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
