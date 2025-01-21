@@ -16,13 +16,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Go
+      # Step to set up Go version 1.20
+      - name: Set up Go (version 1.20)
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.20  # Ensure Go 1.20 is installed
 
+      # Step to check Go version
       - name: Check Go version
-        run: go version  # This will verify Go installation
+        run: go version  # This will confirm Go version in use
 
       - name: Install dependencies
         run: |
