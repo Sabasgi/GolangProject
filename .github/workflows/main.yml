@@ -16,21 +16,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step to set up Go version 1.20
+      # Clear any cached Go version
+      - name: Clear Go version cache (optional)
+        run: rm -rf /opt/hostedtoolcache/go
+
+      # Setup Go version 1.20 explicitly
       - name: Set up Go (version 1.20)
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20  # Ensure Go 1.20 is installed
+          go-version: 1.20
 
-      # Step to check Go version
+      # Check Go version after setup
       - name: Check Go version
-        run: go version  # This will confirm Go version in use
+        run: go version  # Verify the installed Go version
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           go mod tidy
-          go mod verify  # Ensures dependencies are correctly installed
+          go mod verify
 
+      # Build the application
       - name: Build the application
         run: |
           go build -o main .
@@ -39,17 +45,20 @@ jobs:
             exit 1
           fi
 
+      # Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERPASSWORD }}
 
+      # Build and push Docker image
       - name: Build and push Docker image
         run: |
           docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
           docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
 
+      # Verify Docker image exists
       - name: Verify Docker image exists
         run: |
           docker pull ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
