@@ -29,13 +29,9 @@ jobs:
       # Check Go version after setup
       - name: Check Go version
         run: go version  # Verify the installed Go version
-
-      # Install dependencies
       - name: Install dependencies
-        run: |
-          go mod tidy
-          go mod verify
-
+        run: go mod tidy
+        working-directory: ./labms 
       # Build the application
       - name: Build the application
         run: |
