@@ -24,7 +24,7 @@ jobs:
       - name: Set up Go (version 1.19)
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: 1.19
 
       # Check Go version after setup
       - name: Check Go version
