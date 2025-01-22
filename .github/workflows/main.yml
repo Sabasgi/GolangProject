@@ -32,15 +32,12 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
         working-directory: ./labms 
-      # Build the application
-      - name: Build the application
-        run: |
-          go build -o main .
-          if [ ! -f main ]; then
-            echo "Build failed, 'main' executable not found!"
-            exit 1
-          fi
-
+        
+        # Build the application
+      - name: Run go build
+        run: go build -o main .
+        working-directory: ./labms  # Run 'go build' in the labms directory
+        
       # Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
