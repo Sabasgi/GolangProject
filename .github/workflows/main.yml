@@ -44,12 +44,14 @@ jobs:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERPASSWORD }}
 
-      # Build and push Docker image
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Debug Docker Username
+        run: echo "DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
       - name: Build and push Docker image
         run: |
           docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
           docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
-
       # Verify Docker image exists
       - name: Verify Docker image exists
         run: |
