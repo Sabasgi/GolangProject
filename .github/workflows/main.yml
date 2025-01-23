@@ -55,7 +55,7 @@ jobs:
           echo "DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
       - name: Build Docker image
         run: |
-          docker build -t labms:latest /mnt/d/Projects/Workspace/src/GolangProject/labms
+          docker build -t labms:latest ./src/GolangProject/labms
           docker push labms:latest
       - name: Run Docker Container
         run: |
