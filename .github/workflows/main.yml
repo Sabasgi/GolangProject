@@ -47,12 +47,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Debug Docker Username
-        run: echo "DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
-      - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
-          docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
-      # Verify Docker image exists
-      - name: Verify Docker image exists
-        run: |
-          docker pull ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
+          if [ -z "${{ secrets.DOCKERUSERNAME }}" ]; then
+          echo "Error: DOCKERUSERNAME is not set or empty!"
+          exit 1
+          fi
+          echo "DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
