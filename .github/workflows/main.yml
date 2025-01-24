@@ -63,8 +63,12 @@ jobs:
           docker build -t labms:latest -f ./labms/Dockerfile ./labms
       - name: Tag Docker Image
         run: |
-          docker tag labms:latest shraddhasa/labms:latest
-          docker push labms:latest
+          docker tag labms:latest shraddhasa/labms:latest  # Tag it correctly with your Docker Hub username
+
+      - name: Push Docker Image
+        run: |
+          docker push shraddhasa/labms:latest  # Push the image to your Docker Hub account
+
       - name: Run Docker Container
         run: |
-         docker run -d -p 8766:8768 labms:latest
+          docker run -d -p 8766:8768 shraddhasa/labms:latest  # Run the container from your Docker Hub rep
