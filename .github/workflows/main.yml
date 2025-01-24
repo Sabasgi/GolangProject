@@ -46,13 +46,18 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Check current directory
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "List files in current directory:"
+          ls -la
       - name: Debug Docker Username
         run: |
           if [ -z "${{ secrets.DOCKERUSERNAME }}" ]; then
           echo "Error: DOCKERUSERNAME is not set or empty!"
           exit 1
           fi
-          echo "DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
+          echo "Found DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
       - name: Build Docker image
         run: |
           docker build -t labms:latest -f ./src/GolangProject/labms/Dockerfile ./src/GolangProject/labms
