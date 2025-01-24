@@ -72,3 +72,6 @@ jobs:
       - name: Run Docker Container
         run: |
           docker run -d -p 8766:8768 shraddhasa/labms:latest  # Run the container from your Docker Hub rep
+      - name: Verify Docker container is running
+        run: |
+          docker ps
