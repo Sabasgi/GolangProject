@@ -58,9 +58,9 @@ jobs:
           exit 1
           fi
           echo "Found DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
-      - name: Build Docker image
+      - name: Build Docker Image
         run: |
-          docker build -t labms:latest -f ./src/GolangProject/labms/Dockerfile ./src/GolangProject/labms
+          docker build -t labms:latest -f ./labms/Dockerfile ./labms
           docker push labms:latest
       - name: Run Docker Container
         run: |
