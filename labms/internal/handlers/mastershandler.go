@@ -342,7 +342,9 @@ func (mh *MainHandlers) UpdateLabRoute(c *gin.Context) {
 }
 
 func (mh *MainHandlers) GetAllLabsRoute(c *gin.Context) {
-	labs, err := mh.Labservice.GetAllLabsService()
+	role := c.GetString("role")
+	labId := c.GetString("labId")
+	labs, err := mh.Labservice.GetAllLabsService(role, labId)
 	if err != nil {
 		fmt.Println("ERROR : GetAllLabsRoute", err)
 		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -564,7 +566,24 @@ func (mh *MainHandlers) GetAllUsersRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 	return
 }
-
+func (mh *MainHandlers) GetAllLabsAllUsersRoute(c *gin.Context) {
+	r := c.GetString("role")
+	id := c.GetString("labId")
+	labs, er := mh.Labservice.GetAllLabsService(r, id)
+	if er != nil {
+		fmt.Println("ERROR : GetAllLabsAllUsersRoute", er)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": er.Error()})
+		return
+	}
+	users, err := mh.Uservice.GetAllLabsAllUsersService(labs)
+	if err != nil {
+		fmt.Println("ERROR : GetAllUsersRoute", err)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+	return
+}
 func (mh *MainHandlers) GetOneUserRoute(c *gin.Context) {
 	var user models.Userr
 	bindError := c.Bind(&user)
@@ -796,6 +815,25 @@ func (mh *MainHandlers) DeleteBranchRoute(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, map[string]string{"message": "Branch deleted successfully"})
 	return
+}
+func (mh *MainHandlers) GetAllLabsAllBranchesRoute(c *gin.Context) {
+	r := c.GetString("role")
+	id := c.GetString("labId")
+	labs, er := mh.Labservice.GetAllLabsService(r, id)
+	if er != nil {
+		fmt.Println("ERROR : GetAllLabsAllUsersRoute", er)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": er.Error()})
+		return
+	}
+	users, err := mh.Branchservice.GetAllLabsAllBranchesService(labs)
+	if err != nil {
+		fmt.Println("ERROR : GetAllUsersRoute", err)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+	return
+
 }
 
 // ................................................................................

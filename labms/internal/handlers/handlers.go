@@ -98,6 +98,7 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	// adminRoutes.POST("/user/create", h.CreateUserRoute)
 	c.POST("/user/create", middleware.RoleAuthorization([]string{"admin"}), h.CreateUserRoute) /// usage of rolebased authorization
 	c.GET("/user/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllUsersRoute)
+	c.GET("/labs/users/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllLabsAllUsersRoute)
 	o.POST("/user/create", h.CreateUserRoute)
 	o.PUT("/user/update", h.UpdateUserRoute)
 	// o.GET("/user/getall", h.GetAllUsersRoute)
@@ -138,8 +139,10 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	//Lab
 	o.POST("/lab/create", h.CreateLabRoute)
 	o.PUT("/lab/update", h.UpdateLabRoute)
-	o.GET("/lab/getall", h.GetAllLabsRoute)
-	o.POST("/lab/getone", h.GetOneLabRoute)
+	c.GET("/lab/getall", h.GetAllLabsRoute)
+	c.GET("/labs/branches/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllLabsAllBranchesRoute)
+
+	c.POST("/lab/getone", h.GetOneLabRoute)
 	o.POST("/lab/deleteone", h.DeleteLabRoute)
 	//Branches of lab
 	o.POST("/branch/create", h.CreateBranchRoute)

@@ -584,7 +584,7 @@ type LabRepo interface {
 	Create(models.Lab) error
 	BulkCreate([]models.Lab) error
 	Modify(models.Lab) error
-	GetAll() ([]models.Lab, error)
+	GetAll(role, labId string) ([]models.Lab, error)
 	GetOne(models.Lab) (models.Lab, error)
 	DeleteOne(models.Lab) error
 }
@@ -668,15 +668,24 @@ func (lr *LabSQLRepo) Modify(l models.Lab) error {
 }
 
 // Get all labs
-func (lr *LabSQLRepo) GetAll() ([]models.Lab, error) {
+func (lr *LabSQLRepo) GetAll(role, labId string) ([]models.Lab, error) {
 	var labs []models.Lab
-	query := "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id>1"
-	rowsCount, rerr := lr.CRepo.Session.SelectBySql(query).Load(&labs)
+	var st *dbr.SelectStmt
+
+	var q string
+	if role == "superadmin" {
+		q = "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id>1"
+		st = lr.CRepo.Session.SelectBySql(q)
+	} else {
+		q = "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id = ?"
+		st = lr.CRepo.Session.SelectBySql(q, labId)
+
+	}
+	rowsCount, rerr := st.Load(&labs)
 	if rerr != nil {
 		fmt.Println("ERROR : LabSQLRepo GetAll ", rerr)
 		return nil, rerr
 	}
-
 	if rowsCount > 0 && len(labs) > 0 {
 		fmt.Println("SUCCESS : LabSQLRepo Len(labs) ", len(labs))
 		return labs, nil
@@ -687,9 +696,17 @@ func (lr *LabSQLRepo) GetAll() ([]models.Lab, error) {
 
 // Get a single lab by its ID
 func (lr *LabSQLRepo) GetOne(l models.Lab) (models.Lab, error) {
-	query := "SELECT lab_id, lab_name,lab_code FROM Lab WHERE lab_id = ?"
+	var query string
+	var st *dbr.SelectStmt
+	if l.LabCode == "" {
+		query = "SELECT lab_id, lab_name,lab_code FROM Lab WHERE lab_code = ?"
+		st = lr.CRepo.Session.SelectBySql(query, l.LabCode)
+	} else {
+		query = "SELECT lab_id, lab_name,lab_code FROM Lab WHERE lab_id = ?"
+		st = lr.CRepo.Session.SelectBySql(query, l.LabID)
+	}
 	var lab models.Lab
-	err := lr.CRepo.Session.SelectBySql(query, l.LabID).LoadOne(&lab)
+	err := st.LoadOne(&lab)
 	if err != nil {
 		fmt.Println("ERROR : LabSQLRepo GetOne ", err)
 		return lab, err
@@ -723,6 +740,7 @@ type BranchRepo interface {
 	GetAll() ([]models.Branch, error)
 	GetOne(models.Branch) (models.Branch, error)
 	DeleteOne(models.Branch) error
+	GetAllLabsAllBranches([]models.Lab) ([]models.LabsBranches, error)
 }
 
 type BranchSQLRepo struct {
@@ -851,11 +869,49 @@ func (br *BranchSQLRepo) DeleteOne(b models.Branch) error {
 	return errors.New("ERROR_BRANCH_NOT_DELETED")
 }
 
+// Get all users
+func (br *BranchSQLRepo) GetAllLabsAllBranches(labs []models.Lab) ([]models.LabsBranches, error) {
+	var users []models.Branch
+	var labsBranches []models.LabsBranches
+	// if r == "superadmin" {
+
+	// }
+	for _, lab := range labs {
+		var lu models.LabsBranches
+		lu.LabID = lab.LabID
+		lu.LabCode = lab.LabCode
+		lu.CreatedOn = lab.CreatedOn
+		lu.LabName = lab.LabName
+		// lu.ValidityDate = lab.ValidityDate
+		q := "SELECT branch_id, branch_name, lab_id, address, branch_code, city_id, created_at FROM Branch WHERE lab_id = ? ; "
+		// q := "SELECT user_id, NAME,username, email, role, phone_number, created_at ,PASSWORD FROM USER u WHERE lab_id = ? ;"
+		rowsCount, rerr := br.CRepo.Session.SelectBySql(q, lab.LabID).Load(&users)
+		if rerr != nil {
+			fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", rerr)
+			// return nil, rerr
+		}
+		if rowsCount > 0 && len(users) > 0 {
+			fmt.Println("SUCCESS : GetAllLabsAllBranches Len(users) ", len(users))
+			lu.Users = append(lu.Users, users...)
+			// return users, nil
+		}
+		labsBranches = append(labsBranches, lu)
+	}
+	if len(labsBranches) > 0 {
+		fmt.Println("SUCCESS : GetAllLabsAllBranches GetAll Found", len(labsBranches))
+		return labsBranches, nil
+
+	}
+	fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", "not found")
+	return labsBranches, errors.New("Not Found")
+}
+
 // ...........................................................................................................................................................................
 type UserrRepo interface {
 	Create(models.Userr) error
 	Modify(models.Userr) error
 	GetAll(r, id string) ([]models.ResponseUser, error)
+	GetAllLabsAllUsers([]models.Lab) ([]models.LabsUsers, error)
 	GetOne(models.Userr) (models.Userr, error)
 	GetUser(models.Userr) (models.Userr, error)
 	DeleteOne(models.Userr) error
@@ -911,17 +967,16 @@ func (ur *UserSQLRepo) Modify(u models.Userr) error {
 func (ur *UserSQLRepo) GetAll(r, id string) ([]models.ResponseUser, error) {
 	var users []models.ResponseUser
 	var query string
-	if r == "superadmin" {
-		query = `SELECT user_id, NAME,username, email, role, phone_number, created_at,l.lab_id,l.lab_name,l.lab_code
+	// if r == "superadmin" {
+	// query = `SELECT user_id, NAME,username, email, role, phone_number, created_at,l.lab_id,l.lab_name,l.lab_code
+	// FROM USER u
+	// INNER JOIN lab l ON l.lab_id = u.lab_id;`
+	// } else {
+	query = `SELECT user_id, NAME,username, email, role, phone_number, created_at,l.lab_id,l.lab_name,l.lab_code
 					FROM USER u
-					INNER JOIN lab l ON l.lab_id = u.lab_id;`
-	} else {
-		query = `SELECT user_id, NAME,username, email, role, phone_number, created_at,l.lab_id,l.lab_name,l.lab_code
-					FROM USER u
-					INNER JOIN lab l ON l.lab_id = u.lab_id AND u.lab_id=?;`
-	}
-
-	rowsCount, rerr := ur.CRepo.Session.SelectBySql(query).Load(&users)
+					INNER JOIN lab l ON l.lab_id = u.lab_id AND u.lab_id = ?;`
+	// }
+	rowsCount, rerr := ur.CRepo.Session.SelectBySql(query, id).Load(&users)
 	if rerr != nil {
 		fmt.Println("ERROR : UserSQLRepo GetAll ", rerr)
 		return nil, rerr
@@ -933,6 +988,42 @@ func (ur *UserSQLRepo) GetAll(r, id string) ([]models.ResponseUser, error) {
 	}
 	fmt.Println("ERROR : UserSQLRepo GetAll ", "not found")
 	return users, errors.New("Not Found")
+}
+
+// Get all users
+func (ur *UserSQLRepo) GetAllLabsAllUsers(labs []models.Lab) ([]models.LabsUsers, error) {
+	var users []models.Userr
+	var labsUsers []models.LabsUsers
+	// if r == "superadmin" {
+
+	// }
+	for _, lab := range labs {
+		var lu models.LabsUsers
+		lu.LabID = lab.LabID
+		lu.LabCode = lab.LabCode
+		lu.CreatedOn = lab.CreatedOn
+		lu.LabName = lab.LabName
+		// lu.ValidityDate = lab.ValidityDate
+		q := "SELECT user_id, NAME,username, email, role, phone_number, created_at ,PASSWORD FROM USER u WHERE lab_id = ? ;"
+		rowsCount, rerr := ur.CRepo.Session.SelectBySql(q, lab.LabID).Load(&users)
+		if rerr != nil {
+			fmt.Println("ERROR : UserSQLRepo GetAll ", rerr)
+			// return nil, rerr
+		}
+		if rowsCount > 0 && len(users) > 0 {
+			fmt.Println("SUCCESS : UserSQLRepo Len(users) ", len(users))
+			lu.Users = append(lu.Users, users...)
+			// return users, nil
+		}
+		labsUsers = append(labsUsers, lu)
+	}
+	if len(labsUsers) > 0 {
+		fmt.Println("SUCCESS : UserSQLRepo GetAll Found", len(labsUsers))
+		return labsUsers, nil
+
+	}
+	fmt.Println("ERROR : UserSQLRepo GetAll ", "not found")
+	return labsUsers, errors.New("Not Found")
 }
 
 // Get a single user by its ID
