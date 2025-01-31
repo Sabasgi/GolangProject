@@ -37,21 +37,41 @@ jobs:
       - name: Run go build
         run: go build -o main .
         working-directory: ./labms  # Run 'go build' in the labms directory
-        
-      # Log in to DockerHub
-      - name: Log in to DockerHub
+        # Log in to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERPASSWORD }}
 
-      # Build and push Docker image
-      - name: Build and push Docker image
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check current directory
         run: |
-          docker build -t ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest .
-          docker push ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
+          echo "Current directory: $(pwd)"
+          echo "List files in current directory:"
+          ls -la
+      - name: Debug Docker Username
+        run: |
+          if [ -z "${{ secrets.DOCKERUSERNAME }}" ]; then
+          echo "Error: DOCKERUSERNAME is not set or empty!"
+          exit 1
+          fi
+          echo "Found DOCKERUSERNAME=${{ secrets.DOCKERUSERNAME }}"
+      - name: Build Docker Image
+        run: |
+          docker build -t labms:latest -f ./labms/Dockerfile ./labms
+      - name: Tag Docker Image
+        run: |
+          docker tag labms:latest shraddhasa/labms:latest  # Tag it correctly with your Docker Hub username
 
-      # Verify Docker image exists
-      - name: Verify Docker image exists
+      - name: Push Docker Image
         run: |
-          docker pull ${{ secrets.DOCKERUSERNAME }}/golangprojects:latest
+          docker push shraddhasa/labms:latest  # Push the image to your Docker Hub account
+
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 8766:8768 shraddhasa/labms:latest  # Run the container from your Docker Hub rep
+      - name: Verify Docker container is running
+        run: |
+          docker ps
