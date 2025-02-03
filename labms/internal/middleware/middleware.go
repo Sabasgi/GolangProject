@@ -18,7 +18,7 @@ import (
 func TokenValidationMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		arr := strings.Split(c.GetHeader("Authorization"), " ")
-		fmt.Println("arrrr,,header", arr, c.GetHeader("Authorization"))
+		// fmt.Println("arrrr,,header", arr, c.GetHeader("Authorization"))
 		if len(arr) > 1 {
 			token := arr[1]
 			if token == "" {

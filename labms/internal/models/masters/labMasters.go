@@ -17,6 +17,8 @@ type Branch struct {
 	BranchCode string `json:"branch_code" db:"branch_code"`
 	Address    string `json:"address" db:"address"`
 	CityID     int    `json:"city_id" db:"city_id"`
+	LabName    string `json:"lab_name" db:"lab_name"`
+	LabCode    string `json:"lab_code" db:"lab_code"`
 }
 type Department struct {
 	DepartmentID   int    `json:"department_id" db:"department_id"`

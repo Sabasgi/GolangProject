@@ -242,7 +242,7 @@ func (ls *LabServiceStruct) UpdateLabService(lab models.Lab) error {
 	return ls.LabService.Modify(lab)
 }
 
-func (ls *LabServiceStruct) GetAllLabsService(role, labId string) ([]models.Lab, error) {
+func (ls *LabServiceStruct) GetAllLabsService(role string, labId int) ([]models.Lab, error) {
 	return ls.LabService.GetAll(role, labId)
 }
 
@@ -278,8 +278,8 @@ func (bs *BranchServiceStruct) UpdateBranchService(branch models.Branch) error {
 	return bs.BranchService.Modify(branch)
 }
 
-func (bs *BranchServiceStruct) GetAllBranchesService() ([]models.Branch, error) {
-	return bs.BranchService.GetAll()
+func (bs *BranchServiceStruct) GetAllBranchesService(role string, labId int) ([]models.Branch, error) {
+	return bs.BranchService.GetAll(role, labId)
 }
 
 func (bs *BranchServiceStruct) GetOneBranchService(branch models.Branch) (models.Branch, error) {
@@ -313,7 +313,7 @@ func (us *UserrServiceStruct) UpdateUserService(user models.Userr) error {
 	return us.UserService.Modify(user)
 }
 
-func (us *UserrServiceStruct) GetAllUsersService(r, id string) ([]models.ResponseUser, error) {
+func (us *UserrServiceStruct) GetAllUsersService(r string, id int) ([]models.ResponseUser, error) {
 	return us.UserService.GetAll(r, id)
 }
 func (us *UserrServiceStruct) GetAllLabsAllUsersService(labs []models.Lab) ([]models.LabsUsers, error) {

@@ -343,7 +343,9 @@ func (mh *MainHandlers) UpdateLabRoute(c *gin.Context) {
 
 func (mh *MainHandlers) GetAllLabsRoute(c *gin.Context) {
 	role := c.GetString("role")
-	labId := c.GetString("labId")
+	labId := c.GetInt("labId")
+	uId := c.GetInt("userId")
+	fmt.Println("UID ", uId)
 	labs, err := mh.Labservice.GetAllLabsService(role, labId)
 	if err != nil {
 		fmt.Println("ERROR : GetAllLabsRoute", err)
@@ -555,7 +557,7 @@ func (mh *MainHandlers) UpdateUserRoute(c *gin.Context) {
 
 func (mh *MainHandlers) GetAllUsersRoute(c *gin.Context) {
 	userRole := c.GetString("role") // Assume role is extracted from token in earlier middleware
-	labId := c.GetString("labId")
+	labId := c.GetInt("labId")
 
 	users, err := mh.Uservice.GetAllUsersService(userRole, labId)
 	if err != nil {
@@ -568,7 +570,7 @@ func (mh *MainHandlers) GetAllUsersRoute(c *gin.Context) {
 }
 func (mh *MainHandlers) GetAllLabsAllUsersRoute(c *gin.Context) {
 	r := c.GetString("role")
-	id := c.GetString("labId")
+	id := c.GetInt("labId")
 	labs, er := mh.Labservice.GetAllLabsService(r, id)
 	if er != nil {
 		fmt.Println("ERROR : GetAllLabsAllUsersRoute", er)
@@ -776,7 +778,9 @@ func (mh *MainHandlers) UpdateBranchRoute(c *gin.Context) {
 }
 
 func (mh *MainHandlers) GetAllBranchesRoute(c *gin.Context) {
-	branches, err := mh.Branchservice.GetAllBranchesService()
+	r := c.GetString("role")
+	id := c.GetInt("labId")
+	branches, err := mh.Branchservice.GetAllBranchesService(r, id)
 	if err != nil {
 		fmt.Println("ERROR : GetAllBranchesRoute", err)
 		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -818,7 +822,7 @@ func (mh *MainHandlers) DeleteBranchRoute(c *gin.Context) {
 }
 func (mh *MainHandlers) GetAllLabsAllBranchesRoute(c *gin.Context) {
 	r := c.GetString("role")
-	id := c.GetString("labId")
+	id := c.GetInt("labId")
 	labs, er := mh.Labservice.GetAllLabsService(r, id)
 	if er != nil {
 		fmt.Println("ERROR : GetAllLabsAllUsersRoute", er)

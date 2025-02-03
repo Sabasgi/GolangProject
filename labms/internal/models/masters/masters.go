@@ -27,7 +27,7 @@ type Role struct {
 }
 type Userr struct {
 	UserID      int    `json:"user_id" db:"user_id"`
-	LabID       int    `json:"lab_id" db:"user_id"`
+	LabID       int    `json:"lab_id" db:"lab_id"`
 	Name        string `json:"name" db:"name"`
 	Email       string `json:"email" db:"email"`
 	Password    string `json:"password" db:"password"`

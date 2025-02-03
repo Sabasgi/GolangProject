@@ -584,7 +584,7 @@ type LabRepo interface {
 	Create(models.Lab) error
 	BulkCreate([]models.Lab) error
 	Modify(models.Lab) error
-	GetAll(role, labId string) ([]models.Lab, error)
+	GetAll(role string, labId int) ([]models.Lab, error)
 	GetOne(models.Lab) (models.Lab, error)
 	DeleteOne(models.Lab) error
 }
@@ -668,7 +668,7 @@ func (lr *LabSQLRepo) Modify(l models.Lab) error {
 }
 
 // Get all labs
-func (lr *LabSQLRepo) GetAll(role, labId string) ([]models.Lab, error) {
+func (lr *LabSQLRepo) GetAll(role string, labId int) ([]models.Lab, error) {
 	var labs []models.Lab
 	var st *dbr.SelectStmt
 
@@ -737,7 +737,7 @@ type BranchRepo interface {
 	Create(models.Branch) error
 	Modify(models.Branch) error
 	BulkCreate([]models.Branch) error
-	GetAll() ([]models.Branch, error)
+	GetAll(role string, labId int) ([]models.Branch, error)
 	GetOne(models.Branch) (models.Branch, error)
 	DeleteOne(models.Branch) error
 	GetAllLabsAllBranches([]models.Lab) ([]models.LabsBranches, error)
@@ -826,10 +826,19 @@ func (br *BranchSQLRepo) Modify(b models.Branch) error {
 }
 
 // GetAll retrieves all branches
-func (br *BranchSQLRepo) GetAll() ([]models.Branch, error) {
+func (br *BranchSQLRepo) GetAll(role string, labId int) ([]models.Branch, error) {
 	var branches []models.Branch
-	query := "SELECT branch_id, branch_name, lab_id, address, branch_code, city_id, created_at FROM Branch"
-	rowsCount, err := br.CRepo.Session.SelectBySql(query).Load(&branches)
+	var st *dbr.SelectStmt
+	var q string
+	if role == "superadmin" {
+		q = `SELECT branch_id, branch_name, l.lab_id,l.lab_name, address, branch_code, city_id, created_at FROM Branch AS b INNER JOIN lab AS l ON l.lab_id = b.lab_id WHERE l.lab_id > 1 ;`
+		st = br.CRepo.Session.SelectBySql(q)
+	} else {
+		q = `SELECT branch_id, branch_name, l.lab_id,l.lab_name, address, branch_code, city_id, created_at FROM Branch AS b INNER JOIN lab AS l ON l.lab_id = b.lab_id WHERE b.lab_id = ? ;`
+		st = br.CRepo.Session.SelectBySql(q, labId)
+
+	}
+	rowsCount, err := st.Load(&branches)
 	if err != nil {
 		fmt.Println("ERROR : BranchSQLRepo GetAll ", err)
 		return nil, err
@@ -910,7 +919,7 @@ func (br *BranchSQLRepo) GetAllLabsAllBranches(labs []models.Lab) ([]models.Labs
 type UserrRepo interface {
 	Create(models.Userr) error
 	Modify(models.Userr) error
-	GetAll(r, id string) ([]models.ResponseUser, error)
+	GetAll(r string, id int) ([]models.ResponseUser, error)
 	GetAllLabsAllUsers([]models.Lab) ([]models.LabsUsers, error)
 	GetOne(models.Userr) (models.Userr, error)
 	GetUser(models.Userr) (models.Userr, error)
@@ -964,7 +973,7 @@ func (ur *UserSQLRepo) Modify(u models.Userr) error {
 }
 
 // Get all users
-func (ur *UserSQLRepo) GetAll(r, id string) ([]models.ResponseUser, error) {
+func (ur *UserSQLRepo) GetAll(r string, id int) ([]models.ResponseUser, error) {
 	var users []models.ResponseUser
 	var query string
 	// if r == "superadmin" {
@@ -1041,7 +1050,7 @@ func (ur *UserSQLRepo) GetOne(u models.Userr) (models.Userr, error) {
 
 // get user by username and password
 func (ur *UserSQLRepo) GetUser(u models.Userr) (models.Userr, error) {
-	query := "SELECT user_id, name, username,role  FROM User WHERE username = ? AND password = ?"
+	query := "SELECT user_id, name, username,role,lab_id FROM User WHERE username = ? AND password = ?"
 	var user models.Userr
 	err := ur.CRepo.Session.SelectBySql(query, u.Username, u.Password).LoadOne(&user)
 	if err != nil {
