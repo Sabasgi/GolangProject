@@ -20,6 +20,17 @@ type Branch struct {
 	LabName    string `json:"lab_name" db:"lab_name"`
 	LabCode    string `json:"lab_code" db:"lab_code"`
 }
+type BranchDepts struct {
+	BranchID    int          `json:"branch_id" db:"branch_id"`
+	BranchName  string       `json:"branch_name" db:"branch_name"`
+	LabID       int          `json:"lab_id" db:"lab_id"`
+	BranchCode  string       `json:"branch_code" db:"branch_code"`
+	Address     string       `json:"address" db:"address"`
+	CityID      int          `json:"city_id" db:"city_id"`
+	LabName     string       `json:"lab_name" db:"lab_name"`
+	LabCode     string       `json:"lab_code" db:"lab_code"`
+	Departments []Department `json:"departments"`
+}
 type Department struct {
 	DepartmentID   int    `json:"department_id" db:"department_id"`
 	BranchID       int    `json:"branch_id" db:"branch_id"`

@@ -282,6 +282,10 @@ func (bs *BranchServiceStruct) GetAllBranchesService(role string, labId int) ([]
 	return bs.BranchService.GetAll(role, labId)
 }
 
+func (bs *BranchServiceStruct) GetAllBranchesAllDeptsService(b []models.Branch) ([]models.BranchDepts, error) {
+	return bs.BranchService.GetAllBranchesAllDepts(b)
+}
+
 func (bs *BranchServiceStruct) GetOneBranchService(branch models.Branch) (models.Branch, error) {
 	return bs.BranchService.GetOne(branch)
 }

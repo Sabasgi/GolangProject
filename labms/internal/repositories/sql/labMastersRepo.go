@@ -225,7 +225,7 @@ func NewDepartmentRepo(sr *db.SQLRepo) *DepartmentSQLRepo {
 }
 
 func (dr *DepartmentSQLRepo) Create(d models.Department) error {
-	query := "INSERT INTO Department (branch_id, department_name, n,lab_id) VALUES (?, ?, ?,?)"
+	query := "INSERT INTO Department (branch_id, department_name,description,lab_id) VALUES (?, ?, ?,?)"
 	res, rerr := dr.DRepo.Session.Exec(query, d.BranchID, d.DepartmentName, d.Description, d.LabID)
 	if rerr != nil {
 		fmt.Println("ERROR : DepartmentSQLRepo Create ", rerr)

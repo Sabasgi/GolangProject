@@ -789,6 +789,34 @@ func (mh *MainHandlers) GetAllBranchesRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, branches)
 	return
 }
+func (mh *MainHandlers) GetAllBranchessAllDeptRoute(c *gin.Context) {
+	r := c.GetString("role")
+	id := c.GetInt("labId")
+
+	brnches, er := mh.Branchservice.GetAllBranchesService(r, id)
+	if er != nil {
+		fmt.Println("ERROR : GetAllBranchessAllDeptRoute", er)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": er.Error()})
+		return
+	}
+	users, err := mh.Branchservice.GetAllBranchesAllDeptsService(brnches)
+	if err != nil {
+		fmt.Println("ERROR : GetAllBranchessAllDeptRoute", err)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+	return
+
+	branches, err := mh.Branchservice.GetAllBranchesService(r, id)
+	if err != nil {
+		fmt.Println("ERROR : GetAllBranchessAllDeptRoute", err)
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, branches)
+	return
+}
 
 func (mh *MainHandlers) GetOneBranchRoute(c *gin.Context) {
 	var branch models.Branch

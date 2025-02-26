@@ -141,7 +141,6 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	o.PUT("/lab/update", h.UpdateLabRoute)
 	c.GET("/lab/getall", h.GetAllLabsRoute)
 	c.GET("/labs/branches/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllLabsAllBranchesRoute)
-
 	c.POST("/lab/getone", h.GetOneLabRoute)
 	o.POST("/lab/deleteone", h.DeleteLabRoute)
 	//Branches of lab
@@ -151,6 +150,8 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	c.GET("/branch/getall", h.GetAllBranchesRoute)
 	o.POST("/branch/getone", h.GetOneBranchRoute)
 	o.POST("/branch/deleteone", h.DeleteBranchRoute)
+	c.GET("/branches/depts/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllBranchessAllDeptRoute)
+
 	//Branches of department
 	// o.POST("/dept/create", h.CreateDepartmentRoute)
 	c.POST("/dept/create", h.CreateDepartmentRoute)

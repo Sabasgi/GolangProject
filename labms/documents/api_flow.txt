@@ -24,3 +24,34 @@ adminRoutes
 creation of Country , State ,City , Lab , User, Role,Lab,Branch is done
  --- need to implement excel data  upload i.e. bulk upload or file upload and save into db
 Bulk creation is done for - hopitals,hospital branches ,doctors,cities,states,lab branches,
+
+.....................................................................................
+in client lams
+....................................................................................
+1 . on users page for admin login - unable to show users
+2 . need to find a wy to show heirarchy of [  labs --> branches --> departments --> services ]
+
+
+////////admin flow
+can you tell me a simple way of designing which will show proper data based on role of user got aftter user is logged in into system . if admin is there in his login , he can see all the users of the same lab he is working , admin should be able to add delete , update user details , admin will be able to see all the branches of that lab , then he should be able to create ,udate , delete branch , admin can create department of any branch and have access of CRUD on department then admin will have access to add services to the departments and all CRUD on services . then how shall be my ui using primevue , which components shall i use to make ui interactive , and i have a sidebar which has menu list comming from backend i.e. the pages accessible to admin like /laboratories , /users , /departents
+
+  <div class="p-4">
+    <!-- 🔽 Branch & Department Selector -->
+    <h3>Select Branch & Department</h3>
+    <TreeSelect v-model="selectedDepartment" :options="treeData" placeholder="Select Department" class="w-full md:w-30rem" />
+
+    <Divider />
+
+    <!-- 🎯 Show Services for Selected Department -->
+    <h3 v-if="selectedDepartment">Services for {{ selectedDepartment.label }}</h3>
+    <DataTable v-if="selectedDepartment" :value="services" class="p-mt-3">
+      <Column field="name" header="Service Name" />
+      <Column field="description" header="Description" />
+      <Column>
+        <template #body="{ data }">
+          <Button icon="pi pi-pencil" class="p-button-text" @click="editService(data)" />
+          <Button icon="pi pi-trash" class="p-button-text p-button-danger" @click="deleteService(data.id)" />
+        </template>
+      </Column>
+    </DataTable>
+  </div>

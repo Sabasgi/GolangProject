@@ -741,6 +741,7 @@ type BranchRepo interface {
 	GetOne(models.Branch) (models.Branch, error)
 	DeleteOne(models.Branch) error
 	GetAllLabsAllBranches([]models.Lab) ([]models.LabsBranches, error)
+	GetAllBranchesAllDepts([]models.Branch) ([]models.BranchDepts, error)
 }
 
 type BranchSQLRepo struct {
@@ -880,12 +881,12 @@ func (br *BranchSQLRepo) DeleteOne(b models.Branch) error {
 
 // Get all users
 func (br *BranchSQLRepo) GetAllLabsAllBranches(labs []models.Lab) ([]models.LabsBranches, error) {
-	var users []models.Branch
 	var labsBranches []models.LabsBranches
 	// if r == "superadmin" {
 
 	// }
 	for _, lab := range labs {
+		var users []models.Branch
 		var lu models.LabsBranches
 		lu.LabID = lab.LabID
 		lu.LabCode = lab.LabCode
@@ -913,6 +914,40 @@ func (br *BranchSQLRepo) GetAllLabsAllBranches(labs []models.Lab) ([]models.Labs
 	}
 	fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", "not found")
 	return labsBranches, errors.New("Not Found")
+}
+
+// Get all users
+func (br *BranchSQLRepo) GetAllBranchesAllDepts(brnches []models.Branch) ([]models.BranchDepts, error) {
+	var depts []models.Department
+	var brnchDepts []models.BranchDepts
+	// if r == "superadmin" {
+
+	// }
+	for _, b := range brnches {
+		var lu models.BranchDepts
+		lu.BranchCode = b.BranchCode
+		lu.Address = b.Address
+		lu.BranchName = b.BranchName
+		lu.BranchID = b.BranchID
+		lu.LabID = b.LabID
+		q := "SELECT department_id, branch_id, department_name, description,lab_id,branch_id FROM department WHERE branch_id = ? AND lab_id = ?"
+		rowsCount, rerr := br.CRepo.Session.SelectBySql(q, b.BranchID, b.LabID).Load(&depts)
+		if rerr != nil {
+			fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", rerr)
+			return brnchDepts, rerr
+		}
+		if rowsCount > 0 && len(depts) > 0 {
+			fmt.Println("SUCCESS : GetAllLabsAllBranches Len(users) ", len(depts))
+			lu.Departments = append(lu.Departments, depts...)
+		}
+		brnchDepts = append(brnchDepts, lu)
+	}
+	if len(brnchDepts) > 0 {
+		fmt.Println("SUCCESS : GetAllLabsAllBranches GetAll Found", len(brnchDepts))
+		return brnchDepts, nil
+	}
+	fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", "not found")
+	return brnchDepts, errors.New("Not Found")
 }
 
 // ...........................................................................................................................................................................
