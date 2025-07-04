@@ -66,7 +66,6 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 
 	// clientRoutes := e.Group("/client")
 	// clientRoutes.Use(middleware.RoleBasedMiddleware("client"))
-
 	h := &MainHandlers{
 		Ps:                s.Prodservice,
 		Countryservice:    s.Countryservice,
@@ -166,6 +165,8 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	o.GET("/lab/service/getall", h.GetAllServicesRoute)
 	o.POST("/lab/service/getone", h.GetOneServiceRoute)
 	o.POST("/lab/service/deleteone", h.DeleteServiceRoute)
+	// c.GET("/depts/services/getall", middleware.RoleAuthorization([]string{"admin"}), h.GetAllDeptServicesRoute)
+
 	//patient
 	o.POST("/patient/bulk/create", h.CreateBulkPatientsRoute)
 	o.POST("/patient/create", h.CreatePatientRoute)
@@ -173,6 +174,11 @@ func NewHandlers(s AllServices, e *gin.Engine) {
 	o.GET("/patient/getall", h.GetAllPatientsRoute)
 	o.POST("/patient/getone", h.GetOnePatintRoute)
 	o.POST("/patient/deleteone", h.DeletePatientRoute)
+
+	// superadmin routes
+	// o.GET("/labsdepts/branches", middleware.RoleAuthorization([]string{"superadmin"}), h.GetAllLabsDeptsBranchesServicesRoute)
+	c.GET("/labsdepts/branches", h.GetAllLabsDeptsBranchesServicesRoute)
+
 	/*// Doctor
 	o.POST("/doctor/create", h.CreateDoctorRoute)
 	o.POST("/doctors/create", h.CreateDoctorsRoute)

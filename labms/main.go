@@ -2,6 +2,8 @@ package main
 
 import (
 	"repogin/internal/db"
+	"repogin/internal/middleware"
+	kfka "repogin/internal/queues/kafka"
 	"repogin/internal/services"
 	"repogin/logs"
 
@@ -24,6 +26,7 @@ func main() {
 		fmt.Println("ENV File Reading Error : ", Error)
 		// return Error
 	}
+
 	// Reader := bufio.NewReader(os.Stdin)
 	// fmt.Println("Choose Database\n1-SQL DB\n2-MONGO DB\nEnter your choice:")
 	// choice, dbError := Reader.ReadString('\n')
@@ -43,6 +46,8 @@ func createDataSource() models.DataSource {
 	dataSource.SQLDSN = os.Getenv("sqldsn")
 	dataSource.MongoDBName = os.Getenv("mongodb")
 	dataSource.SQLDBName = os.Getenv("sqldb")
+	dataSource.UsersEventsTopic = os.Getenv("usersEventsTopicName")
+	dataSource.KafkaBroker = os.Getenv("kafkabroker")
 	logs.Init()
 	// dataSource.Collections["Products"] = os.Getenv("coll_products")
 	dataSource.Port = os.Getenv("port")
@@ -61,6 +66,9 @@ func inject(dataSource models.DataSource, dbchoice int) {
 				Name:     "SQL",
 				Database: dataSource.SQLDBName,
 			})
+		//kafka - topics
+		usersEventsPrducr := kfka.NewKafkaProducer(dataSource.UsersEventsTopic, dataSource.KafkaBroker)
+
 		//repos to inject into services
 		prodrepo := sql.NewProductSQLRepo(sqlRepo)
 		Countryrepo := sql.NewCountryRepo(sqlRepo)
@@ -68,7 +76,7 @@ func inject(dataSource models.DataSource, dbchoice int) {
 		Cityrepo := sql.NewCityRepo(sqlRepo)
 		Labrepo := sql.NewLabRepo(sqlRepo)
 		Branchrepo := sql.NewBranchRepo(sqlRepo)
-		Urepo := sql.NewUserrRepo(sqlRepo)
+		Urepo := sql.NewUserrRepo(sqlRepo, usersEventsPrducr)
 		Rolerepo := sql.NewRoleRepo(sqlRepo)
 		Doctorrepo := sql.NewDoctorRepo(sqlRepo)
 		Hospitalrepo := sql.NewHospitalRepo(sqlRepo)
@@ -130,10 +138,50 @@ func inject(dataSource models.DataSource, dbchoice int) {
 	// e := echo.New()
 	// handlers.NewHandlers(allServices, e)
 	routes := gin.Default()
+	routes.Use(middleware.RateLimitMiddleware())
+
 	handlers.NewHandlers(allServices, routes)
+	go middleware.CleanupOldClients() // clean old clients
 	Err := routes.Run(":8768")
 	if Err != nil {
 		fmt.Println("ERROR in server starting - ", Err)
 	}
 	// e.Logger.Fatal(e.Start(":" + dataSource.Port))
 }
+
+/*
+
+connect mysql in docker
+
+docker pull mysql:8.0
+...............................
+docker run -d \
+  --name mysql-container \
+  -e MYSQL_ROOT_PASSWORD=rootpass \
+  -e MYSQL_DATABASE=labms \
+  -v mysql_data:/var/lib/mysql \
+  -p 3307:3306 \
+  mysql:8.0
+..............................................
+docker exec -it mysql-container mysql -u root -p ---------- rootpass
+..............................................
+docker rm -f mysql-container     --- to remove container
+
+*/
+/*
+docker compose file is present in
+/golangproject/labms folder
+/gomuxrest     --- in wsl folder
+
+
+
+to run compose file
+docker-compose up -d    - to run .yml file
+docker ps  ---------to see running containers
+docker exec -it <your-kafka-container-name> bash    ---to run kafka console in cmd
+kafka-topics --bootstrap-server localhost:9092 --list       --------to get list of topics
+kafka-console-producer --broker-list localhost:9092 --topic Users_Events                  ----------to produce messages , write 3 4 messages by pressing enter and when done press ctr+c
+kafka-console-consumer --bootstrap-server localhost:9092 --topic Users_Events --from-beginning -----------------consume those created messages
+
+
+*/

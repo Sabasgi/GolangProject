@@ -246,6 +246,17 @@ func (ls *LabServiceStruct) GetAllLabsService(role string, labId int) ([]models.
 	return ls.LabService.GetAll(role, labId)
 }
 
+// func (ls *LabServiceStruct) GetAllLabsDeptsBranchesServicesService() ([]models.Lab, error) {
+// 	labs, e := ls.LabService.GetAll("superadmin", 0)
+// 	if e != nil {
+// 		fmt.Println("SUCCESS : GetAllLabsDeptsBranchesServicesService Len(labs) ", e)
+// 		return []models.Lab{}, e
+// 	}
+// 	for _, l := range labs {
+
+// 	}
+// }
+
 func (ls *LabServiceStruct) GetOneLabService(lab models.Lab) (models.Lab, error) {
 	return ls.LabService.GetOne(lab)
 }

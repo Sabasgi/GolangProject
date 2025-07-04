@@ -140,11 +140,12 @@ type LabsUsers struct {
 	Users        []Userr `json:"users" db:"users"`
 }
 type LabsBranches struct {
-	LabID        int      `json:"lab_id" db:"lab_id"`
-	LabName      string   `json:"lab_name" db:"lab_name"`
-	LabCode      string   `json:"lab_code" db:"lab_code"`
-	ValidityDate string   `json:"validity_date" db:"validity_date"`
-	CreatedOn    string   `json:"created_on" db:"created_on"`
-	CreatedBy    string   `json:"created_by" db:"created_by"`
-	Users        []Branch `json:"branches" db:"branches"`
+	LabID         int           `json:"lab_id" db:"lab_id"`
+	LabName       string        `json:"lab_name" db:"lab_name"`
+	LabCode       string        `json:"lab_code" db:"lab_code"`
+	ValidityDate  string        `json:"validity_date" db:"validity_date"`
+	CreatedOn     string        `json:"created_on" db:"created_on"`
+	CreatedBy     string        `json:"created_by" db:"created_by"`
+	Branches      []Branch      `json:"branches" db:"branches"`
+	BranchesDepts []BranchDepts `json:"branchesDepts"`
 }

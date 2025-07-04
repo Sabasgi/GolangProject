@@ -213,6 +213,7 @@ type DepartmentRepo interface {
 	GetAll() ([]models.Department, error)
 	GetOne(models.Department) (models.Department, error)
 	DeleteOne(models.Department) error
+	//GetDepertmentsOfBranch(bid, labid int) error
 }
 type DepartmentSQLRepo struct {
 	DRepo *db.SQLRepo
@@ -289,6 +290,17 @@ func (dr *DepartmentSQLRepo) GetOne(d models.Department) (models.Department, err
 	}
 	return department, nil
 }
+
+// func (dr *DepartmentSQLRepo) GetDepertmentsOfBranch(bid, labid int) (models.Department, error) {
+// 	query := "SELECT department_id, branch_id, department_name, description FROM Department WHERE branch_id = ? AND lab_id = ?;"
+// 	var department models.Department
+// 	err := dr.DRepo.Session.QueryRow(query, bid, labid).Scan(&department.DepartmentID, &department.BranchID, &department.DepartmentName, &department.Description)
+// 	if err != nil {
+// 		fmt.Println("ERROR : DepartmentSQLRepo GetOne ", err)
+// 		return department, err
+// 	}
+// 	return department, nil
+// }
 
 func (dr *DepartmentSQLRepo) DeleteOne(d models.Department) error {
 	query := "DELETE FROM Departments WHERE department_id = ?"
@@ -425,6 +437,43 @@ func (sr *ServicesSQLRepo) GetDeptsOfBranch(id int) (masters.Department, error) 
 		return depts, nil
 	}
 	return depts, errors.New("ERRORCODE_DEPT_NOT_FOUND")
+}
+
+// Get all services
+func (sr *ServicesSQLRepo) GetAllServicesofDepts(dpts []models.Department) ([]models.BranchDepts, error) {
+	// var depts []models.Department
+	// var ds []models.DeptServices
+	// // if r == "superadmin" {
+
+	// // }
+	// for _, d := range dpts {
+	// 	var ds models.DeptServices
+	// 	ds.DepartmentID = d.DepartmentID
+	// 	ds.DepartmentName = d.DepartmentName
+	// 	ds.DepartmentID = d.DepartmentID
+	// 	ds.DepartmentID = d.DepartmentID
+	// 	lu.Address = b.Address
+	// 	lu.BranchName = b.BranchName
+	// 	lu.BranchID = b.BranchID
+	// 	lu.LabID = b.LabID
+	// 	q := "SELECT department_id, branch_id, department_name, description,lab_id,branch_id FROM department WHERE branch_id = ? AND lab_id = ?"
+	// 	rowsCount, rerr := br.CRepo.Session.SelectBySql(q, b.BranchID, b.LabID).Load(&depts)
+	// 	if rerr != nil {
+	// 		fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", rerr)
+	// 		return brnchDepts, rerr
+	// 	}
+	// 	if rowsCount > 0 && len(depts) > 0 {
+	// 		fmt.Println("SUCCESS : GetAllLabsAllBranches Len(depts) ", len(depts), " for branch - ", b.BranchID)
+	// 		lu.Departments = append(lu.Departments, depts...)
+	// 	}
+	// 	brnchDepts = append(brnchDepts, lu)
+	// }
+	// if len(brnchDepts) > 0 {
+	// 	fmt.Println("SUCCESS : GetAllLabsAllBranches GetAll Found", len(brnchDepts))
+	// 	return brnchDepts, nil
+	// }
+	// fmt.Println("ERROR : GetAllLabsAllBranches GetAll ", "not found")
+	return []models.BranchDepts{}, errors.New("Not Found")
 }
 
 // ......................................................................................................

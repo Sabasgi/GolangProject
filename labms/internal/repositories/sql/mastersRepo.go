@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"repogin/internal/db"
-	models "repogin/internal/models/masters"
+	kfka "repogin/internal/queues/kafka"
 	"strconv"
 	"strings"
 	"time"
@@ -14,8 +14,13 @@ import (
 	"crypto/rand"
 	"math/big"
 
+	models "repogin/internal/models/masters"
+
 	"github.com/gocraft/dbr"
 )
+
+//Masters
+// Country , State , City , User , Role , Lab , Branch
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const numeric = "0123456789"
@@ -585,6 +590,7 @@ type LabRepo interface {
 	BulkCreate([]models.Lab) error
 	Modify(models.Lab) error
 	GetAll(role string, labId int) ([]models.Lab, error)
+	// GetAllLabsDeptsBranchesServices() ([]models.Lab, error)
 	GetOne(models.Lab) (models.Lab, error)
 	DeleteOne(models.Lab) error
 }
@@ -674,12 +680,11 @@ func (lr *LabSQLRepo) GetAll(role string, labId int) ([]models.Lab, error) {
 
 	var q string
 	if role == "superadmin" {
-		q = "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id>1"
+		q = "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id>0"
 		st = lr.CRepo.Session.SelectBySql(q)
 	} else {
 		q = "SELECT lab_id, lab_name,lab_code,created_on,created_by FROM Lab where lab_id = ?"
 		st = lr.CRepo.Session.SelectBySql(q, labId)
-
 	}
 	rowsCount, rerr := st.Load(&labs)
 	if rerr != nil {
@@ -691,9 +696,16 @@ func (lr *LabSQLRepo) GetAll(role string, labId int) ([]models.Lab, error) {
 		return labs, nil
 	}
 	fmt.Println("ERROR : LabSQLRepo GetAll ", "not found")
-	return labs, errors.New("Not Found")
+	return labs, errors.New("ERRORCODE_LABS_NOT_FOUND")
 }
 
+// Get all labs
+// func (lr *LabSQLRepo) GetAllLabsDeptsBranchesServices() ([]models.Lab, error) {
+// 	var labs []models.Lab
+// 	// var st *dbr.SelectStmt
+
+//	}
+//
 // Get a single lab by its ID
 func (lr *LabSQLRepo) GetOne(l models.Lab) (models.Lab, error) {
 	var query string
@@ -902,7 +914,7 @@ func (br *BranchSQLRepo) GetAllLabsAllBranches(labs []models.Lab) ([]models.Labs
 		}
 		if rowsCount > 0 && len(users) > 0 {
 			fmt.Println("SUCCESS : GetAllLabsAllBranches Len(users) ", len(users))
-			lu.Users = append(lu.Users, users...)
+			lu.Branches = append(lu.Branches, users...)
 			// return users, nil
 		}
 		labsBranches = append(labsBranches, lu)
@@ -937,7 +949,7 @@ func (br *BranchSQLRepo) GetAllBranchesAllDepts(brnches []models.Branch) ([]mode
 			return brnchDepts, rerr
 		}
 		if rowsCount > 0 && len(depts) > 0 {
-			fmt.Println("SUCCESS : GetAllLabsAllBranches Len(users) ", len(depts))
+			fmt.Println("SUCCESS : GetAllLabsAllBranches Len(depts) ", len(depts), " for branch - ", b.BranchID)
 			lu.Departments = append(lu.Departments, depts...)
 		}
 		brnchDepts = append(brnchDepts, lu)
@@ -961,12 +973,14 @@ type UserrRepo interface {
 	DeleteOne(models.Userr) error
 }
 type UserSQLRepo struct {
-	CRepo *db.SQLRepo
+	CRepo        *db.SQLRepo
+	UserProducer *kfka.KafkaProducer
 }
 
-func NewUserrRepo(sr *db.SQLRepo) *UserSQLRepo {
+func NewUserrRepo(sr *db.SQLRepo, up *kfka.KafkaProducer) *UserSQLRepo {
 	return &UserSQLRepo{
-		CRepo: sr,
+		CRepo:        sr,
+		UserProducer: up,
 	}
 }
 
@@ -985,7 +999,13 @@ func (ur *UserSQLRepo) Create(u models.Userr) error {
 	inc, _ := res.LastInsertId()
 	rac, _ := res.RowsAffected()
 	if inc > 0 || rac > 0 {
+		c := kfka.CustomMessage{
+			Message: "Successfuly User created",
+			Status:  "success",
+			Data:    u,
+		}
 		fmt.Println("User inserted successfully! with sql id - ", inc)
+		ur.UserProducer.ProduceMessage(c)
 		return nil
 	}
 	return errors.New("ERROR_USER_NOT_INSERTED")

@@ -37,8 +37,17 @@ type Department struct {
 	DepartmentName string `json:"department_name" db:"department_name"`
 	Description    string `json:"description" db:"description"`
 	LabID          int    `json:"lab_id" db:"lab_id"` //not required but added just for normalization
-
 }
+
+type DeptServices struct {
+	DepartmentID   int     `json:"department_id" db:"department_id"`
+	BranchID       int     `json:"branch_id" db:"branch_id"`
+	DepartmentName string  `json:"department_name" db:"department_name"`
+	Description    string  `json:"description" db:"description"`
+	LabID          int     `json:"lab_id" db:"lab_id"` //not required but added just for normalization
+	Services       Service `json:"services" db:"services"`
+}
+
 type Service struct {
 	ServiceID               int64   `db:"service_id"`
 	DepartmentID            int64   `json:"department_id"  db:"department_id"`

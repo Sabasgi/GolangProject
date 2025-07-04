@@ -50,6 +50,18 @@ func TokenValidationMiddleware() gin.HandlerFunc {
 
 	}
 }
+func CleanupOldClients() {
+	for {
+		time.Sleep(5 * time.Minute)
+		clientsMu.Lock()
+		for ip, client := range clients {
+			if time.Since(client.LastSeen) > 10*time.Minute {
+				delete(clients, ip)
+			}
+		}
+		clientsMu.Unlock()
+	}
+}
 
 // Middleware to validate JWT and check user role
 func RoleBasedMiddleware(requiredRole string) gin.HandlerFunc {

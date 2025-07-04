@@ -16,12 +16,14 @@ type DBInfo struct {
 	Name     string
 }
 type DataSource struct {
-	MongoDSN    string
-	SQLDSN      string
-	Port        string
-	MongoDBName string
-	SQLDBName   string
-	Collections map[string]string
+	MongoDSN         string
+	SQLDSN           string
+	Port             string
+	MongoDBName      string
+	SQLDBName        string
+	Collections      map[string]string
+	UsersEventsTopic string
+	KafkaBroker      string
 }
 
 type UserModel struct {

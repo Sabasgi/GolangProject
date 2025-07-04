@@ -355,6 +355,32 @@ func (mh *MainHandlers) GetAllLabsRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, labs)
 	return
 }
+func (mh *MainHandlers) GetAllLabsDeptsBranchesServicesRoute(c *gin.Context) {
+	labs, e := mh.Labservice.GetAllLabsService("superadmin", 0)
+	if e != nil {
+		fmt.Println("ERROR : GetAllLabsDeptsBranchesServicesService Len(labs) ", e)
+		// return []models.Lab{}, e
+	}
+	labbrnches, er := mh.Branchservice.GetAllLabsAllBranchesService(labs)
+	if er != nil {
+		fmt.Println("ERROR : GetAllLabsDeptsBranchesServicesService Len(labs) ", er)
+		// return []models.Lab{}, e
+	}
+	for i, lb := range labbrnches {
+		brndepts, err := mh.Branchservice.GetAllBranchesAllDeptsService(lb.Branches)
+		if err != nil {
+			fmt.Println("ERROR  : GetAllLabsDeptsBranchesServicesService Len(labs) ", err)
+			// c.JSON(http.Status, labbrnches)
+			// return
+		}
+		labbrnches[i].BranchesDepts = append(lb.BranchesDepts, brndepts...)
+		// labbrnches[i].Branches = []models.Branch{}
+
+	}
+	fmt.Println("GetAllLabsDeptsBranchesServicesRoute SUCCESS- ", len(labbrnches))
+	c.JSON(http.StatusOK, labbrnches)
+	// return
+}
 
 func (mh *MainHandlers) GetOneLabRoute(c *gin.Context) {
 	var lab models.Lab
